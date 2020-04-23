@@ -1,0 +1,16 @@
+[submodule "roles/azure"]
+	path = roles/azure
+	url = git@github.com:avinetworks/ansible-role-avicontroller-azure.git
+	branch = master
+[submodule "roles/csp"]
+	path = roles/csp
+	url = git@github.com:avinetworks/ansible-role-avicontroller-csp.git
+	branch = master
+[submodule "roles/gke"]
+	path = roles/gke
+	url = git@github.com:avinetworks/ansible-role-avicontroller_gke.git
+	branch = master
+[submodule "roles/baremetal"]
+	path = roles/baremetal
+	url = git@github.com:avinetworks/ansible-role-avicontroller.git
+	branch = master
