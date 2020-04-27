@@ -1,0 +1,28 @@
+---
+# tasks file for avinetworks.avicontroller_gke
+
+- name: Avi Controller | GKE | Present | Create controller addresses
+  gcp_compute_address:
+    name: "{{ avi_controller_prefix }}-{{ avi_namespace }}-{{ index }}"
+    region: "{{ avi_gcp_region }}"
+    project: "{{ avi_gcp_project }}"
+    auth_kind: "{{ avi_gcp_auth_kind }}"
+    service_account_file: "{{ avi_gcp_service_account_file }}"
+    address_type: EXTERNAL
+    state: present
+  register: avi_gcp_compute_addresses
+  loop: "{{ range(0, avi_controller_count, 1)|list }}"
+  loop_control:
+    loop_var: index
+
+# - name: Avi Controller | GKE | Resume deplyoment | set replicas to 1
+#   k8s_scale:
+#     api_version: v1
+#     kind: StatefulSet
+#     name: node-0
+#     namespace: "{{ avi_namespace }}"
+#     replicas: 1
+#     wait_timeout: 60
+
+- name: Avi Controller | GKE | Resume deplyoment | set replicas to 1
+  command: kubectl scale -n {{ avi_namespace }} --replicas=1 statefulset/node-0

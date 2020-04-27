@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    deployment_k8s_auth_kubeconfig: "{{ ansible_env.HOME }}/.kube/config"
+    deployment_major_version: "{{ deployment_avi_version.split('.')[:1] }}"
+    deployment_minor_version: "{{ deployment_avi_version.split('.')[:2]|join('.') }}"
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ deployment_k8s_auth_kubeconfig }}"
+    GOOGLE_APPLICATION_CREDENTIALS: "{{ deployment_gcp_service_account_file }}"
+  roles:
+    - role: avinetworks.avisdk
+    - role: ericsysmin.gcp_devel
+  tasks:
+    - name: Include setup.json data
+      include_vars: "{{ deployment_minor_version }}_setup.yml"
+    - name: Create the Avi Controller deployment on K8s
+      include_role:
+        name: avinetworks.avicontroller_gke
+      vars:
+        avi_controller_state: present
+        avi_controller_count: "{{ deployment_controller_count }}"
+        avi_controller_version: "{{ deployment_avi_version }}"
+        avi_controller_prefix: saas-deployment-address
+        avi_controller_password: "{{ deployment_admin_password|default(omit) }}"
+        avi_gcp_project: "{{ deployment_environment_project }}"
+        avi_gcp_region: "{{ deployment_region }}"
+        avi_gcp_auth_kind: serviceaccount
+        avi_gcp_service_account_file: "{{ deployment_gcp_service_account_file }}"
+        avi_k8s_auth_kubeconfig: "{{ deployment_k8s_auth_kubeconfig }}"
+        avi_namespace: "{{ deployment_code }}"
+        avi_controller_disk_size: "{{ deployment_controller_disk_size }}"
+        avi_controller_container_image: "gcr.io/{{ deployment_environment_project }}/controller:{{ deployment_avi_version }}"
+        avi_controller_storage_class_name: regionalpd-storageclass-ssd
+        avi_controller_namespace_labels:
+          deployment: "{{ deployment_name }}"
+          type: saas-deployment
+          version: "{{ deployment_avi_version }}"
+          tier: "{{ deployment_tier }}"
+          org_name: "{{ deployment_org_name }}"
+          status: provisioning
+        avi_controller_nodeselector:
+          saas_controller_node_tier: "{{ deployment_tier }}"
+        avi_setup_yaml: "{{ deployment_controller_setup_yaml }}"

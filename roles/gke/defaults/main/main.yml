@@ -1,0 +1,24 @@
+---
+# defaults file for avinetworks.avicontroller_gke
+avi_controller_state: present
+avi_controller_count: 1
+avi_controller_prefix: avicontroller
+avi_controller_username: admin
+
+avi_statefulset_replicas: 1
+avi_controller_storage_class_name: "{{ avi_controller_prefix }}-regionalpd-storageclass-ssd"
+
+avi_controller_cpu_count: 8
+avi_controller_memory_size: 27
+avi_controller_disk_size: 128
+avi_controller_req_cpu: "{{ avi_controller_cpu_count|int // 2 }}"
+avi_controller_req_mem: "{{ avi_controller_memory_size|int // 2 }}"
+
+avi_controller_version: 18.2.5-9073-20190730.184134
+
+avi_controller_container_image: avinetworks/controller:{{ avi_controller_version }}
+avi_persistent_disk_name: "{{ avi_controller_prefix }}-{{ avi_namespace }}-{{ index }}-disk"
+
+avi_k8s_auth_kubeconfig: "{{ ansible_env.HOME }}/.kube/config"
+
+avi_setup_yaml: ""

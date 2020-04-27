@@ -1,0 +1,28 @@
+---
+# tasks file for saas_deployment
+
+- name: Avi Controller | GKE | Check if Namespace exists
+  k8s_info:
+    api_version: v1
+    kind: Namespace
+    name: "{{ avi_namespace }}"
+  register: avi_existing_namespace
+
+- name: Avi Controller | GKE | Check if StatefulSet already exists
+  k8s_info:
+    api_version: v1
+    kind: StatefulSet
+    namespace: "{{ avi_namespace }}"
+  register: avi_existing_statefulsets
+  when: avi_existing_namespace.resources|count > 0
+
+- name: Avi Controller | GKE | Set Avi Container image if controller already exists
+  set_fact:
+    avi_controller_container_image: "{{ avi_existing_statefulsets.resources[0].spec.template.spec.containers[0].image }}"
+    avi_already_exists: yes
+    avi_controller_count: "{{ avi_existing_statefulsets.resources|count }}"
+  when:
+    - avi_existing_namespace.resources|count > 0
+    - avi_existing_statefulsets.resources|count > 0
+
+- include_tasks: "{{ avi_controller_state }}/main.yml"
